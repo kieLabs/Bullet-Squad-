@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a1224" />
+  <meta name="description" content="BULLET SQUAD – GAMERKIE EDITION: Build Your Army. Destroy The Enemy. Premium 3D WebGL Squad Shooter." />
+  <title>BULLET SQUAD – GAMERKIE EDITION</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Floating Damage & Event Layer -->
+    <div id="floating-layer" class="floating-layer"></div>
+
+    <!-- FPS Counter -->
+    <div id="fps-counter" class="fps-counter hidden">60 FPS</div>
+
+    <!-- IN-GAME HUD -->
+    <div id="hud" class="hud hidden">
+      <div class="hud-top">
+        <div class="hud-box hud-left">
+          <div class="hud-title" id="hud-level">LEVEL 1</div>
+          <div class="hud-subtitle" id="hud-mode-label">CAMPAIGN</div>
+          <div class="progress-bar-bg">
+            <div id="hud-progress-fill" class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <div class="hud-box hud-center">
+          <div class="counter-pill squad-pill" id="hud-squad-pill">
+            <span class="pill-label">SQUAD</span>
+            <span class="pill-value" id="hud-squad-count">3</span>
+          </div>
+          <div class="counter-pill enemy-pill">
+            <span class="pill-label">ENEMIES</span>
+            <span class="pill-value" id="hud-enemy-count">0</span>
+          </div>
+        </div>
+
+        <div class="hud-box hud-right">
+          <div class="coin-badge" id="hud-coin-badge">
+            <span class="coin-dot"></span>
+            <span id="hud-coins">0</span>
+          </div>
+          <button id="btn-pause" class="hud-icon-btn" aria-label="Pause Game">II</button>
+        </div>
+      </div>
+
+      <!-- BOSS HEALTH OVERLAY -->
+      <div id="hud-boss-bar" class="hud-boss-container hidden">
+        <div class="boss-warning" id="hud-boss-warning">WARNING: BOSS APPROACHING</div>
+        <div class="boss-header">
+          <span id="hud-boss-name">GIANT WAR BEAST</span>
+          <span id="hud-boss-phase">PHASE 1/3</span>
+        </div>
+        <div class="boss-hp-bg">
+          <div id="hud-boss-hp-fill" class="boss-hp-fill"></div>
+        </div>
+      </div>
+
+      <!-- ACTIVE POWERUPS -->
+      <div id="hud-powerups" class="hud-powerups"></div>
+
+      <!-- BOTTOM CONTROLS & WEAPON BAR -->
+      <div class="hud-bottom">
+        <div class="weapon-card">
+          <div class="weapon-card-label">EQUIPPED WEAPON</div>
+          <div class="weapon-card-name" id="hud-weapon-name">Assault Rifle</div>
+          <div class="weapon-card-tier" id="hud-weapon-tier">LVL 1 • Basic Weapon</div>
+        </div>
+
+        <div class="hud-actions">
+          <button id="btn-auto-fire" class="action-btn active">AUTO FIRE: ON</button>
+          <button id="btn-manual-fire" class="action-btn fire-btn">FIRE</button>
+          <button id="btn-jump-dodge" class="action-btn">JUMP / DODGE</button>
+          <button id="btn-special-attack" class="action-btn special-btn">
+            <span>AIRSTRIKE</span>
+            <small id="special-cooldown-label">READY</small>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN MENU OVERLAY -->
+    <div id="screen-main-menu" class="menu-screen active">
+      <div class="menu-header">
+        <div class="brand-badge">GAMERKIE PRESENTS</div>
+        <h1 class="game-logo">BULLET SQUAD</h1>
+        <p class="game-tagline">Build Your Army. Destroy The Enemy.</p>
+      </div>
+
+      <div class="menu-top-bar">
+        <div class="currency-display">
+          <span class="coin-dot"></span>
+          <span id="menu-coins">0</span> COINS
+        </div>
+        <div class="commander-status" id="menu-commander-info">
+          CMDR: ELITE COMMANDER • LVL 1
+        </div>
+      </div>
+
+      <div class="menu-layout">
+        <div class="menu-column primary-modes">
+          <button id="btn-play" class="menu-btn hero-btn">PLAY</button>
+          <button id="btn-campaign" class="menu-btn mode-btn">CAMPAIGN</button>
+          <button id="btn-endless" class="menu-btn mode-btn">ENDLESS WAR</button>
+          <button id="btn-boss-battle" class="menu-btn mode-btn">BOSS BATTLE</button>
+          <button id="btn-survival" class="menu-btn mode-btn">SURVIVAL MODE</button>
+          <button id="btn-army-challenge" class="menu-btn mode-btn">ARMY CHALLENGE</button>
+        </div>
+
+        <div class="menu-column secondary-menus">
+          <button id="btn-characters" class="menu-btn sub-btn">CHARACTERS</button>
+          <button id="btn-weapons" class="menu-btn sub-btn">WEAPONS</button>
+          <button id="btn-upgrades" class="menu-btn sub-btn">UPGRADES</button>
+          <button id="btn-missions" class="menu-btn sub-btn">MISSIONS</button>
+          <button id="btn-daily-rewards" class="menu-btn sub-btn">DAILY REWARDS</button>
+          <button id="btn-achievements" class="menu-btn sub-btn">ACHIEVEMENTS</button>
+          <button id="btn-settings" class="menu-btn sub-btn">SETTINGS</button>
+          <button id="btn-how-to-play" class="menu-btn sub-btn">HOW TO PLAY</button>
+        </div>
+      </div>
+
+      <div class="menu-footer">
+        <span>GAMERKIE — PLAY. FIGHT. CONQUER.</span>
+      </div>
+    </div>
+
+    <!-- MODAL PANEL FOR SUB-SCREENS (Characters, Weapons, Upgrades, Missions, Daily, Achievements, Settings, HowToPlay) -->
+    <div id="screen-modal" class="modal-screen hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="modal-title">ARMORY</h2>
+          <div class="currency-display">
+            <span class="coin-dot"></span>
+            <span id="modal-coins">0</span>
+          </div>
+          <button id="btn-modal-close" class="close-btn">✕</button>
+        </div>
+        <div id="modal-body" class="modal-body"></div>
+      </div>
+    </div>
+
+    <!-- PAUSE SCREEN -->
+    <div id="screen-pause" class="modal-screen hidden">
+      <div class="modal-card compact-card">
+        <h2>GAME PAUSED</h2>
+        <p id="pause-stats-text">Level 1 • Squad: 3</p>
+        <div class="vertical-btns">
+          <button id="btn-resume" class="menu-btn hero-btn">RESUME BATTLE</button>
+          <button id="btn-restart" class="menu-btn mode-btn">RESTART LEVEL</button>
+          <button id="btn-pause-settings" class="menu-btn sub-btn">SETTINGS</button>
+          <button id="btn-pause-home" class="menu-btn danger-btn">MAIN MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEVEL COMPLETE / VICTORY SCREEN -->
+    <div id="screen-victory" class="modal-screen hidden">
+      <div class="modal-card results-card">
+        <div class="results-banner victory-banner">VICTORY!</div>
+        <h2 id="victory-level-title">LEVEL 1 COMPLETED</h2>
+        <div id="victory-stars" class="stars-row">★★★</div>
+        <div class="results-grid">
+          <div class="res-row"><span>Total Enemies Defeated</span><strong id="vic-enemies">0</strong></div>
+          <div class="res-row"><span>Maximum Squad Size</span><strong id="vic-max-squad">0</strong></div>
+          <div class="res-row"><span>Bosses Defeated</span><strong id="vic-bosses">0</strong></div>
+          <div class="res-row"><span>Mission Bonus</span><strong id="vic-bonus">+0</strong></div>
+          <div class="res-row highlight"><span>Total Coins Earned</span><strong id="vic-coins">+0</strong></div>
+          <div class="res-row"><span>Performance Rating</span><strong id="vic-rating">S-RANK</strong></div>
+        </div>
+        <div class="horizontal-btns">
+          <button id="btn-next-level" class="menu-btn hero-btn">NEXT LEVEL</button>
+          <button id="btn-replay-level" class="menu-btn mode-btn">REPLAY</button>
+          <button id="btn-victory-home" class="menu-btn sub-btn">HOME</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAME OVER / DEFEAT SCREEN -->
+    <div id="screen-gameover" class="modal-screen hidden">
+      <div class="modal-card results-card">
+        <div class="results-banner defeat-banner">SQUAD WIPED OUT</div>
+        <h2 id="gameover-subtitle">MISSION FAILED</h2>
+        <div class="results-grid">
+          <div class="res-row"><span>Final Score</span><strong id="go-score">0</strong></div>
+          <div class="res-row"><span>Highest Army Count</span><strong id="go-max-squad">0</strong></div>
+          <div class="res-row"><span>Enemies Defeated</span><strong id="go-enemies">0</strong></div>
+          <div class="res-row highlight"><span>Earned Rewards</span><strong id="go-coins">+0</strong></div>
+        </div>
+        <div class="horizontal-btns">
+          <button id="btn-retry" class="menu-btn hero-btn">RETRY</button>
+          <button id="btn-gameover-home" class="menu-btn sub-btn">HOME</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIRMATION DIALOG -->
+    <div id="screen-confirm" class="modal-screen hidden">
+      <div class="modal-card compact-card">
+        <h3>CONFIRM RESET</h3>
+        <p>Resetting progress will erase all unlocked characters, weapons, upgrades, coins, and level history. Proceed?</p>
+        <div class="horizontal-btns">
+          <button id="btn-confirm-yes" class="menu-btn danger-btn">YES, RESET ALL</button>
+          <button id="btn-confirm-no" class="menu-btn sub-btn">CANCEL</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
